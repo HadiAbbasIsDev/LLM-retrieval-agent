@@ -1,0 +1,23 @@
+# Smart RAG Chatbot Requirements - CPU-Only Installation
+
+# Database
+pymongo==4.6.1
+
+# Numerical computing
+numpy==1.24.3
+
+# PyTorch CPU-only (install BEFORE sentence-transformers to avoid CUDA)
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+
+# Embedding and NLP (includes cross-encoder for re-ranking)
+sentence-transformers>=2.3.1
+
+# LLM Integration
+llama-cpp-python>=0.2.32
+
+# NOTE: 
+# - Do NOT install standalone 'bson' package - it conflicts with pymongo's bson module
+# - Installing torch CPU-only first prevents CUDA dependencies
+# - For CPU-only usage, this configuration avoids ~2GB of unnecessary CUDA packages
+
