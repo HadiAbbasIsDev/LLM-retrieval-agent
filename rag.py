@@ -1,13 +1,20 @@
 from pymongo import MongoClient
 from sentence_transformers import SentenceTransformer, CrossEncoder
+from qdrant_client import QdrantClient
 import numpy as np
 import re
 
-# DB Connection
+# MongoDB Connection (for conversations metadata)
 client = MongoClient("mongodb://localhost:27017/")
 db = client["chatbotDB"]
-embed_col = db["embeddings"]
 conv_col = db["conversations"]
+
+# Qdrant Connection (for embeddings)
+print("Connecting to Qdrant...")
+qdrant = QdrantClient(url="http://localhost:6333")
+print("Connected to Qdrant!")
+
+COLLECTION_NAME = "embeddings"
 
 # Load local embedding model
 model = SentenceTransformer("/home/it-admin/Desktop/SmartApp_Clone/EmbedModel")
@@ -62,39 +69,48 @@ def search_messages(query, top_k=5, user_id=None, min_similarity=0.3):
     # Embed the user query
     query_embed = model.encode(query).tolist()
 
-    results = []
-
-    # Build filter query for user-specific search
-    filter_query = {}
+    # Build Qdrant filter for user-specific search
+    query_filter = None
     if user_id:
-        filter_query = {
-            "$or": [
-                {"sender_id": user_id},
-                {"receiver_id": user_id}
+        from qdrant_client.models import Filter, FieldCondition, MatchAny
+        query_filter = Filter(
+            should=[
+                FieldCondition(key="sender_id", match=MatchAny(any=[user_id])),
+                FieldCondition(key="receiver_id", match=MatchAny(any=[user_id]))
             ]
-        }
+        )
 
-    # Compare with filtered embeddings
-    for emb in embed_col.find(filter_query):
-        sim = cosine_similarity(query_embed, emb["embedding"])
+    # Search in Qdrant (get more results for re-ranking)
+    search_results = qdrant.search(
+        collection_name=COLLECTION_NAME,
+        query_vector=query_embed,
+        query_filter=query_filter,
+        limit=top_k * 4,  # Get more candidates
+        score_threshold=min_similarity  # Qdrant's built-in threshold
+    )
+
+    results = []
+    for hit in search_results:
+        payload = hit.payload
+        message_text = payload["message"]
         
         # Calculate keyword match score as additional signal
-        kw_score = keyword_match_score(query, emb["message"])
+        kw_score = keyword_match_score(query, message_text)
         
         # Hybrid score: semantic similarity boosted by keyword match
-        # If keywords match well, lower the semantic threshold requirement
+        sim = hit.score
         hybrid_score = sim
         if kw_score > 0.5:  # If more than 50% of keywords match
-            hybrid_score = sim*0.6 + kw_score*0.4
+            hybrid_score = sim * 0.6 + kw_score * 0.4
         
         # Only include if hybrid score is above threshold
         if hybrid_score >= min_similarity or (hybrid_score >= 0.25):
             results.append({
-                "conversation_id": emb["_id"],
-                "message": emb["message"],
-                "sender_id": emb["sender_id"],
-                "receiver_id": emb["receiver_id"],
-                "timestamp": emb.get("timestamp"),
+                "conversation_id": payload["message_id"],
+                "message": message_text,
+                "sender_id": payload["sender_id"],
+                "receiver_id": payload["receiver_id"],
+                "timestamp": payload.get("timestamp"),
                 "similarity": float(sim),
                 "keyword_score": float(kw_score),
                 "hybrid_score": float(hybrid_score)
