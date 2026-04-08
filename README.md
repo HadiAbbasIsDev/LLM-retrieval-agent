@@ -1,8 +1,8 @@
-# 🤖 Smart RAG Chatbot
+# Smart RAG Chatbot
 
 An intelligent chatbot that uses Retrieval-Augmented Generation (RAG) to answer questions about your conversation history. Built with local LLM (Gemma) and semantic search using embeddings.
 
-## 📋 Features
+## Features
 
 - **Semantic Search**: Find conversations based on meaning, not just keywords
 - **Natural Language Queries**: Ask questions naturally like "Whom did I talk about cats to?"
@@ -10,7 +10,7 @@ An intelligent chatbot that uses Retrieval-Augmented Generation (RAG) to answer 
 - **Local LLM**: Uses Gemma-1.1-7B for intelligent response generation
 - **Embedding-based Retrieval**: Uses BGE-small-en for fast and accurate semantic search
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌─────────────┐
@@ -45,7 +45,7 @@ An intelligent chatbot that uses Retrieval-Augmented Generation (RAG) to answer 
     └──────────┘
 ```
 
-## 🗄️ Database Schema
+## Database Schema
 
 ### Conversations Collection
 ```javascript
@@ -73,7 +73,7 @@ An intelligent chatbot that uses Retrieval-Augmented Generation (RAG) to answer 
 }
 ```
 
-## 📦 Installation
+## Installation
 
 ### 1. Install Python Dependencies
 
@@ -93,7 +93,7 @@ Ensure you have:
 - LLM model at: `LLM/gemma-1.1-7b-it.Q4_K_M.gguf`
 - Embedding model at: `models/embeddings/bge-small-en/`
 
-## 🚀 Usage
+## Usage
 
 ### Step 1: Generate Embeddings (First Time Only)
 
@@ -140,7 +140,7 @@ Test the basic retrieval system without LLM:
 python rag.py
 ```
 
-## 📁 File Structure
+## File Structure
 
 ```
 SmartApp_Clone/
@@ -184,7 +184,7 @@ n_gpu_layers=0,    # GPU layers (0 for CPU only)
 top_k=10  # Number of most similar messages to retrieve
 ```
 
-## 💡 How It Works
+## How It Works
 
 ### 1. **Embedding Generation**
 - Each message is converted to a 384-dimensional vector using BGE-small-en
@@ -203,7 +203,7 @@ top_k=10  # Number of most similar messages to retrieve
 - LLM generates natural language answer
 - Response includes relevant names, dates, and details
 
-## 🎯 Example Interaction
+## Example Interaction
 
 ```
 🤖 SMART RAG CHATBOT - Interactive Mode
@@ -226,7 +226,7 @@ sleeps 14-16 hours a day and asked why cats sleep so much.
 ----------------------------------------------------------------------
 ```
 
-## 🔒 Privacy & Security
+## Privacy & Security
 
 - **User Isolation**: Each user can only query their own conversations
 - **Local Processing**: All AI processing happens locally (no external API calls)
@@ -262,7 +262,7 @@ sudo systemctl start mongod
 ### Out of memory with LLM
 Reduce `n_ctx` or use a smaller quantized model.
 
-## 🚀 Future Enhancements
+## Future Enhancements
 
 - [ ] Multi-language support
 - [ ] Voice query input
@@ -272,11 +272,11 @@ Reduce `n_ctx` or use a smaller quantized model.
 - [ ] Conversation summarization
 - [ ] Export conversation threads
 
-## 📝 License
+## License
 
 This project is open source and available for educational purposes.
 
-## 🤝 Contributing
+## Contributing
 
 Feel free to submit issues, fork the repository, and create pull requests for any improvements.
 
